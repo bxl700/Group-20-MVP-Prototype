@@ -279,25 +279,31 @@ void loop() {
     String soilMessage = String(moistureValue);
     events.send(soilMessage.c_str(), "soil", millis());
 
-    // 2. Read reservoir level sensor
-    int rawValue = analogRead(SENSOR_PIN);
-    int levelPercent = map(rawValue, MIN_VAL, MAX_VAL, 0, 100);
-    levelPercent = constrain(levelPercent, 0, 100);
-    String reservoirMessage = String(levelPercent) + "%";
+    // // 2. Read reservoir level sensor
+    // int rawValue = analogRead(SENSOR_PIN);
+    // Serial.println("Raw reservoir sensor value: " + String(rawValue));
+    // int levelPercent = map(rawValue, MIN_VAL, MAX_VAL, 0, 100);
+    // levelPercent = constrain(levelPercent, 0, 100);
+    // String reservoirMessage = String(levelPercent) + "%";
+    // events.send(reservoirMessage.c_str(), "reservoir", millis());
+
+    String reservoirMessage = "100%";
     events.send(reservoirMessage.c_str(), "reservoir", millis());
 
     // 3. Determine and send status message
-    String statusMessage;
-    if (levelPercent < THRESHOLD) {
-        statusMessage = "Add Water";
-        Serial.print("ALERT: Low Water (");
-    } else {
-        statusMessage = "Good";
-        Serial.print("Level OK (");
-    }
-    Serial.print(levelPercent);
-    Serial.println("%)");
+    // String statusMessage;
+    // if (levelPercent < THRESHOLD) {
+    //     statusMessage = "Add Water";
+    //     Serial.print("ALERT: Low Water (");
+    // } else {
+    //     statusMessage = "Good";
+    //     Serial.print("Level OK (");
+    // }
+    // Serial.print(levelPercent);
+    // Serial.println("%)");
+    // events.send(statusMessage.c_str(), "status", millis());
+    String statusMessage = "Good";
     events.send(statusMessage.c_str(), "status", millis());
 
-    delay(2000);  // Send message every 2 seconds
+    delay(500);  // Send message every 2 seconds
 }
