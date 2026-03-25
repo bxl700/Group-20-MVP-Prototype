@@ -2,6 +2,10 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+
 
 // LCD I2C address and dimensions
 LiquidCrystal_I2C lcd(0x27, 16, 2); // Pin 0x27 Tested
@@ -9,8 +13,30 @@ LiquidCrystal_I2C lcd(0x27, 16, 2); // Pin 0x27 Tested
 // Pin Configuration
 const int soilPin = A2;
 
+// WiFi Network Name
+const char* ssid = "CaseRegistered";
+
+// Create AsyncWebServer object on port 80
+AsyncWebServer server(80);
+// Create an Event Source on /events
+AsyncEventSource events("/events");
+
 // Calibration value)
 int dryValue = 2600;  // ESP32 ADC: 0–4095
+
+// Initialize WiFi
+void initWiFi() {
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid);
+    Serial.println(WiFi.macAddress());
+    Serial.print("Connecting to WiFi ..");
+    while (WiFi.status() != WL_CONNECTED) {
+        Serial.print('.');
+        delay(1000);
+    }
+    Serial.println(WiFi.localIP());
+    Serial.println(WiFi.macAddress());
+}
 
 
 void setup() {
