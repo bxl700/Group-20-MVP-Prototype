@@ -6,6 +6,8 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
+#include "html.h"
+
 
 // LCD I2C address and dimensions
 LiquidCrystal_I2C lcd(0x27, 16, 2); // Pin 0x27 Tested
@@ -53,6 +55,23 @@ void setup() {
     lcd.print("Plant Monitor");
     delay(1500);
     lcd.clear();
+
+    // Handle Web Server
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(200, "text/html", index_html);
+    });
+
+    // Handle Web Server Events
+    events.onConnect([](AsyncEventSourceClient *client){
+        if(client->lastId()){
+            Serial.printf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
+        }
+        client->send("Connected!", NULL, millis(), 1000);
+    });
+    server.addHandler(&events);
+    server.begin();
+
+    Serial.println("Web server started!");
 }
 
 void loop() {
@@ -71,6 +90,8 @@ void loop() {
 
     lcd.setCursor(0,1);
 
+    String testMessage = "Soil: " + String(moistureValue);
+    events.send(testMessage.c_str(), "test", millis());
     // Printing the status of the soil moisture on the second line of the LCD
     if (moistureValue > dryValue) {
         lcd.print("WATER!!");
