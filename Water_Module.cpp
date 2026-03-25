@@ -2,41 +2,70 @@
 #include <LiquidCrystal_I2C.h>
 #include <Arduino.h>
 
-// Set the LCD address to 0x27 for a 16 chars and 2 line display
+
+//CONFIGURATION
+const int SENSOR_PIN = A0;      // Signal wire connected to Analog Pin A0
+const int THRESHOLD  = 20;      // "Add Water" alert triggers below 20%
+const int MAX_VAL    = 2500;    // Calibration: Max analog value when cup is full
+const int MIN_VAL    = 0;       // Calibration: Value when sensor is dry
+
+// Initialize LCD (Default SunFounder I2C address is 0x27)
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-const int sensorPin = A0; // Analog pin for Water Level Sensor
-int sensorValue = 0;      // Variable to store sensor data
-
 void setup() {
+  // Start Serial for debugging
   Serial.begin(115200);
-  
+
   // Initialize LCD
   lcd.init();
   lcd.backlight();
   
+  // Quick Startup Message
   lcd.setCursor(0, 0);
-  lcd.print("Water Level:");
+  lcd.print("System Loading");
+  for(int i = 0; i < 3; i++) {
+    lcd.print(".");
+    delay(300);
+  }
+  lcd.clear();
 }
 
 void loop() {
-  // Read the analog value (0 - 4095 for ESP32)
-  sensorValue = analogRead(sensorPin);
+  // 1. Read the sensor
+  int rawValue = analogRead(SENSOR_PIN);
 
-  // Map the value to a percentage for easier reading
-  // Note: You may need to calibrate 0 and 1500 based on your specific sensor
-  int levelPercentage = map(sensorValue, 0, 2500, 0, 100);
-  levelPercentage = constrain(levelPercentage, 0, 100);
+  // 2. Convert to Percentage (0 to 100)
+  // ESP32 ADC is 12-bit (0-4095), but these sensors usually peak lower
+  int levelPercent = map(rawValue, MIN_VAL, MAX_VAL, 0, 100);
+  levelPercent = constrain(levelPercent, 0, 100);
 
-  // Print to Serial Monitor for debugging
-  Serial.print("Sensor Value: ");
-  Serial.println(sensorValue);
-
-  // Update LCD
-  lcd.setCursor(0, 1);
+  // 3. Display Static Header
+  lcd.setCursor(0, 0);
   lcd.print("Level: ");
-  lcd.print(levelPercentage);
-  lcd.print("%   "); // Extra spaces clear old digits
+  lcd.print(levelPercent);
+  lcd.print("%    "); // Spaces clear trailing digits
 
-  delay(500); // Wait half a second between readings
+  // 4. Threshold Logic & Status Message
+  lcd.setCursor(0, 1); // Move to second line
+  
+  if (levelPercent < THRESHOLD) {
+    // Alert State
+    lcd.print(">> ADD WATER! <<");
+    
+    // Debugging info to Serial
+    Serial.print("ALERT: Low Water (");
+    Serial.print(levelPercent);
+    Serial.println("%)");
+  } 
+  else {
+    // Safe State
+    lcd.print("Status: GOOD    ");
+    
+    Serial.print("Level OK (");
+    Serial.print(levelPercent);
+    Serial.println("%)");
+  }
+
+  // 5. Small delay for stability
+  delay(500);
 }
