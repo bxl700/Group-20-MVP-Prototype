@@ -15,7 +15,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 void setup() {
   // Start Serial for debugging
   Serial.begin(115200);
-
+  Wire.begin();
   // Initialize LCD
   lcd.init();
   lcd.backlight();
@@ -25,7 +25,7 @@ void setup() {
   lcd.print("System Loading");
   for(int i = 0; i < 3; i++) {
     lcd.print(".");
-    delay(300);
+    delay(1500);
   }
   lcd.clear();
 }
