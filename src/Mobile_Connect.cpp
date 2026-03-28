@@ -3,83 +3,72 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
-
-
-
-
-
+// Define wifi credentials
 const char* ssid = "CaseRegistered";
-
-
-
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
-
 // Create an Event Source on /events
 AsyncEventSource events("/events");
-
 
 // Define pump pins
 const int motorB_1A = 33;
 const int motorB_2A = 15;
 
-const int green_led = 13;
-const int blue_led = 12;
-const int red_led = 27;
+// Define LED pins
+const int Green_Led = 13;
+const int Blue_Led = 12;
+const int Red_Led = 27;
 
-// Pin Configuration
-const int soilPin = 34;  //A2
+// Soil Moisture Configuration
+const int Soil_Moisture = 34;  //A2
+int Dry_Value = 2600;  // ESP32 ADC: 0–4095
 
-// Calibration value)
-int dryValue = 2600;  // ESP32 ADC: 0–4095
+//Water Level Configuration
+const int Water_Level = 35;     // A3
+const int Threshold  = 20;      // "Add Water" alert triggers below 20%
+const int Max_Val    = 2500;    // Calibration: Max analog value when cup is full
+const int Min_Val    = 0;       // Calibration: Value when sensor is dry
 
-//CONFIGURATION
-const int SENSOR_PIN = 35;     // A3
-const int THRESHOLD  = 20;      // "Add Water" alert triggers below 20%
-const int MAX_VAL    = 2500;    // Calibration: Max analog value when cup is full
-const int MIN_VAL    = 0;       // Calibration: Value when sensor is dry
-
-void pump(){
-
+// function to turn pump on for specified time
+void pump(int time){
   digitalWrite(motorB_1A, HIGH);
   digitalWrite(motorB_2A, LOW);
 
-  delay(2000);// delay 2 seconds
+  delay(time); // delay for the specified time
 
   digitalWrite(motorB_1A, LOW);  // turn off pump
   digitalWrite(motorB_2A, LOW);
 }
 
-
-
-
-
+// function to toggle LEDs on
 void ledON() {
     Serial.println("C++ ledON() called (toggle ON)");
-    digitalWrite(green_led, HIGH);
-    digitalWrite(blue_led, HIGH);
-    digitalWrite(red_led, HIGH);
+    digitalWrite(Green_Led, HIGH);
+    digitalWrite(Blue_Led, HIGH);
+    digitalWrite(Red_Led, HIGH);
     
 }
 
+// function to toggle LEDs off
 void ledOFF() {
     Serial.println("C++ ledOFF() called (toggle OFF)");
-    digitalWrite(green_led, LOW);
-    digitalWrite(blue_led, LOW);
-    digitalWrite(red_led, LOW);
+    digitalWrite(Green_Led, LOW);
+    digitalWrite(Blue_Led, LOW);
+    digitalWrite(Red_Led, LOW);
 }
 
-void pumpDuration() {
+// function to call pump()
+void pumpDuration(int time = 2000) {
     Serial.println("C++ pumpDuration() start");
-
-    pump();
-
+    
+    pump(time); // pump on for the specified time
+    
     Serial.println("C++ pumpDuration() end");
 }
 
-// Initialize WiFi
+// Initialize WiFi and connect to ssid, print local ip and MAC address to serial
 void initWiFi() {
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid);
@@ -92,7 +81,7 @@ void initWiFi() {
     Serial.println(WiFi.localIP());
 }
 
-
+// HTML & CSS content for the web page
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
 <head>
@@ -261,12 +250,14 @@ void setup() {
 
     Serial.println("Web server started!");
 
-    pinMode(motorB_1A, OUTPUT);  // set pump pin 1 as output
-    pinMode(motorB_2A, OUTPUT);  // set pump pin 2 as output
+    // Set pump pins as outputs
+    pinMode(motorB_1A, OUTPUT);
+    pinMode(motorB_2A, OUTPUT);
 
-    pinMode(green_led, OUTPUT);
-    pinMode(blue_led, OUTPUT);
-    pinMode(red_led, OUTPUT);
+    // Set LED pins as outputs
+    pinMode(Green_Led, OUTPUT);
+    pinMode(Blue_Led, OUTPUT);
+    pinMode(Red_Led, OUTPUT);
 
 }
 
@@ -275,35 +266,35 @@ void setup() {
 
 void loop() {
     // 1. Read soil moisture sensor
-    int moistureValue = analogRead(soilPin);
+    int moistureValue = analogRead(Soil_Moisture);
     String soilMessage = String(moistureValue);
     events.send(soilMessage.c_str(), "soil", millis());
 
     // // 2. Read reservoir level sensor
-    // int rawValue = analogRead(SENSOR_PIN);
-    // Serial.println("Raw reservoir sensor value: " + String(rawValue));
-    // int levelPercent = map(rawValue, MIN_VAL, MAX_VAL, 0, 100);
-    // levelPercent = constrain(levelPercent, 0, 100);
-    // String reservoirMessage = String(levelPercent) + "%";
-    // events.send(reservoirMessage.c_str(), "reservoir", millis());
-
-    String reservoirMessage = "100%";
+    int rawValue = analogRead(Water_Level);
+    Serial.println("Raw reservoir sensor value: " + String(rawValue));
+    int levelPercent = map(rawValue, Min_Val, Max_Val, 0, 100);
+    levelPercent = constrain(levelPercent, 0, 100);
+    String reservoirMessage = String(levelPercent) + "%";
     events.send(reservoirMessage.c_str(), "reservoir", millis());
 
+    // String reservoirMessage = "100%";
+    // events.send(reservoirMessage.c_str(), "reservoir", millis());
+
     // 3. Determine and send status message
-    // String statusMessage;
-    // if (levelPercent < THRESHOLD) {
-    //     statusMessage = "Add Water";
-    //     Serial.print("ALERT: Low Water (");
-    // } else {
-    //     statusMessage = "Good";
-    //     Serial.print("Level OK (");
-    // }
-    // Serial.print(levelPercent);
-    // Serial.println("%)");
-    // events.send(statusMessage.c_str(), "status", millis());
-    String statusMessage = "Good";
+    String statusMessage;
+    if (levelPercent < Threshold) {
+        statusMessage = "Add Water";
+        Serial.print("ALERT: Low Water (");
+    } else {
+        statusMessage = "Good";
+        Serial.print("Level OK (");
+    }
+    Serial.print(levelPercent);
+    Serial.println("%)");
     events.send(statusMessage.c_str(), "status", millis());
+    // String statusMessage = "Good";
+    // events.send(statusMessage.c_str(), "status", millis());
 
     delay(500);  // Send message every 2 seconds
 }
