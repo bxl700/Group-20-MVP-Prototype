@@ -17,7 +17,7 @@ const int greenLed = 13;
 const int blueLed = 12;
 const int redLed = 27;
 const int soilMoisturePin = 34;  // A2
-const int waterLevelPin = 35;    // A3
+const int waterLevelPin = 36;    // A4
 
 // Sensor Thresholds and Calibration
 const int dryValue = 2600;  // ESP32 ADC: 0–4095
@@ -169,9 +169,9 @@ const char index_html[] PROGMEM = R"rawliteral(
   </div>
   <div class="content">
     <div class="card">
-      <p>🌱 Soil Moisture: <span class="reading" id="soil-moisture">--</span></p>
-      <p>💧 Reservoir Level: <span class="reading" id="reservoir-level">--</span></p>
-      <p>⚙️ Status: <span class="reading" id="status-msg">--</span></p>
+      <p>Soil Moisture: <span class="reading" id="soil-moisture">--</span></p>
+      <p>Reservoir Level: <span class="reading" id="reservoir-level">--</span></p>
+      <p>Status: <span class="reading" id="status-msg">--</span></p>
       <p>
         <button id="ledToggle" class="button toggle-off" onclick="toggleButtonClicked()">LEDs OFF</button>
       </p>
