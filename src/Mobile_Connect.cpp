@@ -312,10 +312,15 @@ void setup() {
   pinMode(greenLed, OUTPUT);
   pinMode(blueLed, OUTPUT);
   pinMode(redLed, OUTPUT);
+
+
+  // NEW CODE
+  pinMode(soilMoisturePin, INPUT);
+  pinMode(waterLevelPin, INPUT);
+  analogSetAttenuation(ADC_11db);
+ 
+
 }
-
-
-
 
 void loop() {
   // Read sensor values
