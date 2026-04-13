@@ -20,7 +20,7 @@ const int soilMoisturePin = 34;  // A2
 const int waterLevelPin = 36;    // A4
 
 // Sensor Thresholds and Calibration
-const int dryValue = 2600;  // ESP32 ADC: 0–4095
+const int dryValue = 2500;  // ESP32 ADC: 0–4095
 const int waterThreshold = 20;      // "Add Water" alert triggers below 20%
 const int waterMaxVal = 2500;       // Calibration: Max analog value when cup is full
 const int waterMinVal = 0;          // Calibration: Value when sensor is dry
@@ -345,16 +345,25 @@ void loop() {
   // Determine and send status message
   String waterStatusMsg;
   if (waterLevelPercent < waterThreshold) {
-    waterStatusMsg = "Add Water";
+    // waterStatusMsg = "Add Water";
     Serial.print("ALERT: Low Water (");
   } else {
-    waterStatusMsg = "Good";
+    // waterStatusMsg = "Good";
     Serial.print("Level OK (");
   }
   Serial.print(waterLevelPercent);
   Serial.println("%)");
-  events.send(waterStatusMsg.c_str(), "status", millis());
+  // events.send(waterStatusMsg.c_str(), "status", millis());
 
+  String soilStatusMsg;
+  if (soilValue > dryValue) {
+    soilStatusMsg = "Soil needs water!";
+    Serial.println("ALERT: Soil is Dry");
+  } else {
+    soilStatusMsg = "Moist";
+    Serial.println("Soil moisture is good");
+  }
+  events.send(soilStatusMsg.c_str(), "status", millis());
 
   // dummy test message for reservoir level and status
   // String reservoirMessage = "100%";
