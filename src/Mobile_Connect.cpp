@@ -20,7 +20,7 @@ const int soilMoisturePin = 34;  // A2
 const int waterLevelPin = 36;    // A4
 
 // Sensor Thresholds and Calibration
-const int dryValue = 2500;  // ESP32 ADC: 0–4095
+const int dryValue = 2400;  // ESP32 ADC: 0–4095
 const int waterThreshold = 20;      // "Add Water" alert triggers below 20%
 const int waterMaxVal = 2500;       // Calibration: Max analog value when cup is full
 const int waterMinVal = 0;          // Calibration: Value when sensor is dry
