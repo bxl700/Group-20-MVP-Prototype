@@ -165,7 +165,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 </head>
 <body>
   <div class="topnav">
-    <h1>Plant Health Monitor</h1>
+    <h1>ECSE 395 | Team - 20 | Plant Health Monitor</h1>
   </div>
   <div class="content">
     <div class="card">
@@ -337,7 +337,7 @@ void loop() {
   events.send(soilMessage.c_str(), "soil", millis());
 
   // Calculate and send water level percentage
-  int waterLevelPercent = map(waterValue, waterMinVal, waterMaxVal, 0, 100);
+  int waterLevelPercent = map(waterValue, waterMinVal, waterMaxVal*0.65, 0, 100);
   waterLevelPercent = constrain(waterLevelPercent, 0, 100);
   String reservoirMessage = String(waterLevelPercent) + "%";
   events.send(reservoirMessage.c_str(), "reservoir", millis());
