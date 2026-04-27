@@ -360,7 +360,7 @@ void loop() {
     soilStatusMsg = "Soil needs water!";
     Serial.println("ALERT: Soil is Dry");
   } else {
-    soilStatusMsg = "Moist";
+    soilStatusMsg = "Plant OK! Soil is moist.";
     Serial.println("Soil moisture is good");
   }
   events.send(soilStatusMsg.c_str(), "status", millis());
